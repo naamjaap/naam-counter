@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -75,4 +76,109 @@
       text-align: left;
       background: rgba(255,255,255,0.6);
       padding: 10px;
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .history h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .history-item {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Naam Jaap Counter</h1>
+
+  <div class="count" id="count">0</div>
+  <div class="mala" id="mala">Maalas: 0</div>
+
+  <button class="tap" onclick="increment()">TAP</button>
+
+  <button class="reset" onclick="resetCounter()">Reset</button>
+
+  <div class="history">
+    <h3>Daily History</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+let count = localStorage.getItem('count') ? parseInt(localStorage.getItem('count')) : 0;
+let mala = Math.floor(count / 108);
+let lastSavedMala = mala;
+let history = JSON.parse(localStorage.getItem('history') || '[]');
+
+updateDisplay();
+renderHistory();
+
+function increment(){
+  count++;
+  let newMala = Math.floor(count / 108);
+
+  // vibration ONLY when new mala completed
+  if(newMala > lastSavedMala){
+    if(navigator.vibrate){
+      navigator.vibrate(200);
+    }
+    saveMalaEntry(newMala - lastSavedMala);
+    lastSavedMala = newMala;
+  }
+
+  mala = newMala;
+  localStorage.setItem('count', count);
+  updateDisplay();
+}
+
+function resetCounter(){
+  count = 0;
+  mala = 0;
+  lastSavedMala = 0;
+  localStorage.setItem('count', count);
+  updateDisplay();
+}
+
+function saveMalaEntry(malasDone){
+  const today = new Date().toLocaleDateString();
+
+  let existing = history.find(h => h.date === today);
+
+  if(existing){
+    existing.malas += malasDone;
+  } else {
+    history.push({date: today, malas: malasDone});
+  }
+
+  localStorage.setItem('history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+
+  history.slice().reverse().forEach(item => {
+    let div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerText = item.date + ' : ' + item.malas + ' maalas';
+    list.appendChild(div);
+  });
+}
+
+function updateDisplay(){
+  document.getElementById('count').innerText = count % 108;
+  document.getElementById('mala').innerText = 'Maalas: ' + mala;
+}
+</script>
+
+</body>
 </html>
