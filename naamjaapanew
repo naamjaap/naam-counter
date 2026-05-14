@@ -1,0 +1,74 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mala Counter</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background: linear-gradient(to bottom, #fff8e1, #ffe0b2);
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+margin: 0;
+text-align: center;
+}
+.container {
+background: white;
+padding: 30px;
+border-radius: 20px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+width: 320px;
+}
+h1 { color: #d35400; }
+.count { font-size: 48px; margin: 20px 0; }
+.mala { font-size: 24px; color: #8e44ad; }
+button {
+padding: 15px 25px;
+margin: 10px;
+border: none;
+border-radius: 12px;
+font-size: 18px;
+cursor: pointer;
+}
+.tap { background: #27ae60; color: white; }
+.reset { background: #e74c3c; color: white; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Naam Jaap Counter</h1>
+<div class="count" id="count">0</div>
+<div class="mala" id="mala">Maalas: 0</div>
+<button class="tap" onclick="increment()">Tap</button>
+<button class="reset" onclick="resetCounter()">Reset</button>
+</div>
+
+<script>
+let count = localStorage.getItem('count') ? parseInt(localStorage.getItem('count')) : 0;
+let mala = Math.floor(count / 108);
+updateDisplay();
+
+function increment(){
+count++;
+mala = Math.floor(count / 108);
+localStorage.setItem('count', count);
+updateDisplay();
+}
+
+function resetCounter(){
+count = 0;
+mala = 0;
+localStorage.setItem('count', count);
+updateDisplay();
+}
+
+function updateDisplay(){
+document.getElementById('count').innerText = count % 108;
+document.getElementById('mala').innerText = 'Maalas: ' + mala;
+}
+</script>
+</body>
+</html>
+
