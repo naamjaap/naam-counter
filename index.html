@@ -36,18 +36,21 @@ font-weight: bold;
 color: white;
 }
 
+/* ✅ UPDATED STATS ROW STYLE */
 .stats-row {
 display: flex;
 justify-content: space-between;
 align-items: center;
 margin-bottom: 15px;
-gap: 8px;
+gap: 10px;
 }
 
 .mala {
-font-size: 15px;
-color: #8e44ad;
 flex: 1;
+font-size: 17px; /* ⬆ slightly bigger */
+color: #87CEFA; /* 💙 light sky blue */
+font-weight: 500;
+text-align: center;
 }
 
 .tap {
@@ -121,7 +124,6 @@ margin-bottom: 5px;
 <h3>Daily History</h3>
 <div id="historyList"></div>
 
-<!-- ✅ NEW BUTTON ADDED BELOW HISTORY -->
 <button class="reset" onclick="resetAllTime()" style="margin-top:10px;">
 Reset All Time
 </button>
@@ -136,8 +138,10 @@ let mala = Math.floor(count / 108);
 let lastSavedMala = mala;
 
 let history = JSON.parse(localStorage.getItem('history') || '[]');
+let totalSeconds = localStorage.getItem('totalSeconds') ? parseInt(localStorage.getItem('totalSeconds')) : 0;
 
 let malaStartTime = null;
+let sessionStart = Date.now();
 let timerInterval = null;
 
 updateDisplay();
@@ -147,6 +151,7 @@ function increment() {
 
 if(count % 108 === 0){
 malaStartTime = Date.now();
+sessionStart = Date.now();
 startTimer();
 }
 
@@ -160,6 +165,9 @@ stopTimer();
 let secondsTaken = Math.floor((Date.now() - malaStartTime) / 1000);
 if(isNaN(secondsTaken)) secondsTaken = 0;
 
+totalSeconds += secondsTaken;
+localStorage.setItem('totalSeconds', totalSeconds);
+
 saveMalaEntry(1, secondsTaken);
 
 if(navigator.vibrate){
@@ -172,6 +180,27 @@ lastSavedMala = newMala;
 mala = newMala;
 localStorage.setItem('count', count);
 updateDisplay();
+}
+
+function startTimer(){
+clearInterval(timerInterval);
+
+timerInterval = setInterval(() => {
+
+let currentSeconds = Math.floor((Date.now() - malaStartTime) / 1000);
+document.getElementById('timer').innerText =
+'Current: ' + formatTime(currentSeconds);
+
+let liveTotal = totalSeconds + Math.floor((Date.now() - sessionStart) / 1000);
+
+document.getElementById('totalTime').innerText =
+'Total: ' + formatTime(liveTotal);
+
+}, 1000);
+}
+
+function stopTimer(){
+clearInterval(timerInterval);
 }
 
 function resetCounter(){
@@ -190,20 +219,19 @@ updateDisplay();
 
 function resetAllTime(){
 
-if(!confirm("Reset ALL history and progress?")) return;
+if(!confirm("Reset EVERYTHING (history + time)?")) return;
 
 history = [];
-
-localStorage.removeItem('history');
-localStorage.removeItem('count');
-
+totalSeconds = 0;
 count = 0;
 mala = 0;
 lastSavedMala = 0;
 
-stopTimer();
+localStorage.removeItem('history');
+localStorage.removeItem('totalSeconds');
+localStorage.removeItem('count');
 
-document.getElementById('timer').innerText = 'Current: 00:00';
+stopTimer();
 
 updateDisplay();
 renderHistory();
@@ -254,20 +282,6 @@ list.appendChild(div);
 });
 }
 
-function startTimer(){
-clearInterval(timerInterval);
-
-timerInterval = setInterval(() => {
-let seconds = Math.floor((Date.now() - malaStartTime) / 1000);
-document.getElementById('timer').innerText =
-'Current: ' + formatTime(seconds);
-}, 1000);
-}
-
-function stopTimer(){
-clearInterval(timerInterval);
-}
-
 function formatTime(seconds){
 
 if(isNaN(seconds)) return "00:00";
@@ -281,7 +295,6 @@ return String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
 function updateDisplay(){
 document.getElementById('count').innerText = count % 108;
 document.getElementById('mala').innerText = 'Maalas: ' + mala;
-document.getElementById('totalTime').innerText = 'Total: 00:00';
 }
 
 </script>
